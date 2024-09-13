@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MvcProject.DAL.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +25,13 @@ namespace MvcProject.PL
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
+            services.AddControllersWithViews(); // Register built in services required by mvc
+
+
+            //services.AddScoped<ApplicationDbContext>();
+            //services.AddScoped<DbContextOptions<ApplicationDbContext>>();
+            services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlServer("Server = .; Database = MVCApplication02 ; Trusted_Connection = True;")); 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
