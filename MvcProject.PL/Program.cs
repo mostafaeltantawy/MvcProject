@@ -13,7 +13,12 @@ namespace MvcProject.PL
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            var hostBuilder = CreateHostBuilder(args).Build();
+
+            // Data seeding
+            // Apply migrations
+
+            hostBuilder.Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
