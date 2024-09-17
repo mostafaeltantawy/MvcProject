@@ -38,14 +38,14 @@
                      
                     </td>
                     <td>
-                        <a asp-controller="Department" asp-action="Edit" class="btn btn-success">
-                            <i class="fa fa-edit"></i> Details
+                        <a asp-controller="Department" asp-action="Edit" asp-route-id = "@department.Id" class="btn btn-success">
+                            <i class="fa fa-edit"></i> Edit
                         </a>
                      
                     </td>
                     <td>
-                        <a asp-controller="Department" asp-action="Delete" class="btn btn-danger">
-                            <i class="fa fa-trash"></i> Details
+                        <a asp-controller="Department" asp-action="Delete" asp-route-id ="@department.Id" class="btn btn-danger">
+                            <i class="fa fa-trash"></i> Delete
                         </a>
                     </td>
                 </tr>
