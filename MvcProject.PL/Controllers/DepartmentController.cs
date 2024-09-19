@@ -35,7 +35,8 @@ namespace MvcProject.PL.Controllers
             if (ModelState.IsValid) // server side validation
             {
                 var count = _departmentsRepo.Add(department);
-                if (count > 0) 
+                if (count > 0)
+                    TempData["Message"] = "Department Is Created"; 
                     return RedirectToAction(nameof(Index));
             }
 
