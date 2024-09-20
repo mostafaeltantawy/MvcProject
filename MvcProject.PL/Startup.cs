@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using MvcProject.BLL.Interfaces;
 using MvcProject.BLL.Repositories;
 using MvcProject.DAL.Data;
+using MvcProject.PL.MappingProfiles;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +37,12 @@ namespace MvcProject.PL
             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+
+            services.AddAutoMapper(M => M.AddProfile(new EmployeeProfile()));
+
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

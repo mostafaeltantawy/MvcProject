@@ -1,4 +1,5 @@
-﻿using MvcProject.BLL.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using MvcProject.BLL.Interfaces;
 using MvcProject.DAL.Data;
 using MvcProject.DAL.Models;
 using System;
@@ -21,5 +22,10 @@ namespace MvcProject.BLL.Repositories
 		{
 			return _dbContext.Employees.Where(e => e.Address == address);
 		}
-	}
+
+        public IQueryable<Employee> GetEmployeesByName(string name)
+        {
+            return _dbContext.Employees.Where(E => E.Name.ToLower().Contains(name.ToLower() )).Include(E => E.Department);
+        }
+    }
 }

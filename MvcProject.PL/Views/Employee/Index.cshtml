@@ -1,18 +1,27 @@
-﻿@model IEnumerable<Employee>
+﻿@model IEnumerable<EmployeeViewModel>
 @{
     ViewData["Title"] = "Index";
     string ViewDataMessage = ViewData["Message"] as string;
 }
 
-@* <div class="alert alert-success">
-    @ViewData["Message"]
+
+
+@* <div class="alert alert-secondary ">
+    @ViewBag.Message
 </div> *@
 
-<div class="alert alert-secondary ">
-    @ViewBag.Message
-</div>
-
 <h1>All Employess</h1>
+<br />
+<br />
+<form class="row offset-2" asp-action="index">
+    <div class="col-8">
+        <input class="form-control" type="text" name="SearchValue" placeholder="Employee's Name"/>
+    </div>
+    <div col-4>
+        <input type="Submit" class="btn btn-info" value="search" />
+    </div>
+
+</form>
 <br />
 <br />
 <a  asp-action="Create" class="btn btn-primary"> create new Employee</a>

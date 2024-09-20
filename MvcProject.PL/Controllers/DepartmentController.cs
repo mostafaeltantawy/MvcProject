@@ -9,17 +9,19 @@ namespace MvcProject.PL.Controllers
 {
     public class DepartmentController : Controller
     {
+        private readonly IUnitOfWork _unitOfWork;
 
-        private readonly IDepartmentRepository _departmentsRepo;
-        public DepartmentController(IDepartmentRepository departmentRepository)
+        public DepartmentController(IUnitOfWork unitOfWork)
         {
-            _departmentsRepo = departmentRepository;
+            _unitOfWork = unitOfWork;
         }
 
         // /Department/Index
         public IActionResult Index()
         {
-            var departments = _departmentsRepo.GetAll();
+            var departments =  _unitOfWork.DepartmentRepository.GetAll();
+            _unitOfWork.Dispose();
+
 
             return View(departments);
         }
@@ -34,7 +36,9 @@ namespace MvcProject.PL.Controllers
         {
             if (ModelState.IsValid) // server side validation
             {
-                var count = _departmentsRepo.Add(department);
+                 _unitOfWork.DepartmentRepository.Add(department);
+                var count = _unitOfWork.Complete();
+                _unitOfWork.Dispose();  
                 if (count > 0)
                     TempData["Message"] = "Department Is Created"; 
                     return RedirectToAction(nameof(Index));
@@ -49,8 +53,9 @@ namespace MvcProject.PL.Controllers
             if(id == null)
                 return BadRequest(); // Stauts code 400
 
-            var department = _departmentsRepo.Get(id.Value); 
-            if(department == null)
+            var department =  _unitOfWork.DepartmentRepository.Get(id.Value);
+            _unitOfWork.Dispose();
+            if (department == null)
                 return NotFound();
             return View(ViewName , department);
 
@@ -64,7 +69,7 @@ namespace MvcProject.PL.Controllers
             //{
             //    return BadRequest();    
             //}
-            //var department = _departmentsRepo.Get(id.Value);
+            //var department =  _unitOfWork.DepartmentRepository.Get(id.Value);
             //if(department == null)
             //{
             //    return NotFound();
@@ -83,7 +88,9 @@ namespace MvcProject.PL.Controllers
             {
                 try
                 {
-                    _departmentsRepo.Update(department);
+                     _unitOfWork.DepartmentRepository.Update(department);
+                    _unitOfWork.Dispose();
+
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
@@ -112,8 +119,12 @@ namespace MvcProject.PL.Controllers
 
             try
             {
-				_departmentsRepo.Delete(department);
-				return RedirectToAction(nameof(Index));
+				 _unitOfWork.DepartmentRepository.Delete(department);
+                _unitOfWork.Complete();
+
+                _unitOfWork.Dispose();
+
+                return RedirectToAction(nameof(Index));
 
 
 			}
