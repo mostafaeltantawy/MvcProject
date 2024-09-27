@@ -25,7 +25,9 @@ namespace MvcProject.DAL.Models
 		public DateTime HireDate { get; set; }
 		public DateTime CreationDate { get; set; } = DateTime.Now;
 
-		[ForeignKey("Department")]
+        public string ImageName { get; set; }
+
+        [ForeignKey("Department")]
 		public int? DepartmentId { get; set; }
 		// FK is optional  => onDelete : Restrict 
 		// FK is required  => onDelete : Cascade 

@@ -1,13 +1,18 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcProject.BLL.Interfaces;
 using MvcProject.DAL.Models;
+using MvcProject.PL.Helpers;
 using MvcProject.PL.ViewModels;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MvcProject.PL.Controllers
 {
-    public class EmployeeController : Controller
+	[Authorize]
+
+	public class EmployeeController : Controller
     {
 
         private readonly IUnitOfWork _unitOfWork;
@@ -18,12 +23,12 @@ namespace MvcProject.PL.Controllers
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
-        public IActionResult Index(string SearchValue)
+        public async Task<IActionResult> Index(string SearchValue)
         {
             IEnumerable<Employee> employees;
             if (string.IsNullOrEmpty(SearchValue))
             {
-                 employees = _unitOfWork.EmployeeRepository.GetAll();
+                 employees = await _unitOfWork.EmployeeRepository.GetAllAsync();
             }
             else
             {
@@ -36,14 +41,14 @@ namespace MvcProject.PL.Controllers
 
 
         }
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewBag.Departments = _unitOfWork.DepartmentRepository.GetAll();
+            ViewBag.Departments = await _unitOfWork.DepartmentRepository.GetAllAsync();
             return View();
         }
 
         [HttpPost]
-        public IActionResult Create(EmployeeViewModel employeeVM)
+        public async Task<IActionResult> Create(EmployeeViewModel employeeVM)
         {
             //Manual mapping
             //var MappedEmployee = new Employee()
@@ -61,9 +66,12 @@ namespace MvcProject.PL.Controllers
 
             if (ModelState.IsValid)
             {
-                _unitOfWork.EmployeeRepository.Add(MappedEmployee);
+                if(employeeVM.Image != null)
+                    MappedEmployee.ImageName =  DocumentSettings.UploadFile(employeeVM.Image, "Images"); 
+                
+                await _unitOfWork.EmployeeRepository.AddAsync(MappedEmployee);
 
-                var result =_unitOfWork.Complete() ;
+                var result = await _unitOfWork.CompleteAsync() ;
                 _unitOfWork.Dispose();
 
                 if (result > 0)
@@ -75,28 +83,28 @@ namespace MvcProject.PL.Controllers
             return View(employeeVM);
         }
 
-        public IActionResult Details(int? id, string ViewName = "Details")
+        public async Task<IActionResult>  Details(int? id, string ViewName = "Details")
         {
             if (id == null)
                 return BadRequest();
-            var employee = _unitOfWork.EmployeeRepository.Get(id.Value);
+            var employee =  await _unitOfWork.EmployeeRepository.GetAsync(id.Value);
             if (employee == null)
                 return NotFound();
-            var MappedEmployee = _mapper.Map<Employee, EmployeeViewModel>(employee); 
+            var MappedEmployee =  _mapper.Map<Employee, EmployeeViewModel>(employee); 
 
             return View(ViewName, MappedEmployee);
         }
 
-        public IActionResult Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
-            ViewBag.Departments =  _unitOfWork.DepartmentRepository.GetAll();
+            ViewBag.Departments = await   _unitOfWork.DepartmentRepository.GetAllAsync();
 
-            return Details(id, "Edit");
+            return  await Details(id, "Edit");
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(EmployeeViewModel employeeVM, [FromRoute] int id)
+        public async Task<IActionResult> Edit(EmployeeViewModel employeeVM, [FromRoute] int id)
         {
             if (id != employeeVM.Id)
                 return BadRequest();
@@ -104,9 +112,12 @@ namespace MvcProject.PL.Controllers
             {
                 try
                 {
+                    if(employeeVM.Image is not null )
+                        employeeVM.ImageName = DocumentSettings.UploadFile(employeeVM.Image, "Images");
+
                     var MappedEmployee = _mapper.Map<EmployeeViewModel,Employee>(employeeVM);
                     _unitOfWork.EmployeeRepository.Update(MappedEmployee);
-                    var result = _unitOfWork.Complete();
+                    var result = await _unitOfWork.CompleteAsync();
                     if (result > 0)
                         return RedirectToAction(nameof(Index));
 
@@ -124,16 +135,16 @@ namespace MvcProject.PL.Controllers
         }
 
       
-        public IActionResult Delete(int? id)
+        public async Task<IActionResult> Delete(int? id)
         {
-            return Details(id, "Delete");
+            return await Details(id, "Delete");
         }
 
 
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Delete(EmployeeViewModel employeeVM, [FromRoute] int id)
+        public async Task<IActionResult> Delete(EmployeeViewModel employeeVM, [FromRoute] int id)
         {
             if (id != employeeVM.Id)
                 return BadRequest();
@@ -144,9 +155,12 @@ namespace MvcProject.PL.Controllers
                     var MappedEmployee = _mapper.Map<EmployeeViewModel, Employee>(employeeVM);
                     _unitOfWork.EmployeeRepository.Delete(MappedEmployee);
 
-                    var result = _unitOfWork.Complete() ;
-                    if (result > 0)
-                        return RedirectToAction(nameof(Index));
+                    var result = await  _unitOfWork.CompleteAsync() ;
+
+                    if (result > 0 && MappedEmployee.ImageName != null)
+                        DocumentSettings.DeleteFile(MappedEmployee.ImageName, "Images");
+                    return RedirectToAction("Index");
+
 
                 }
                 catch (System.Exception ex)

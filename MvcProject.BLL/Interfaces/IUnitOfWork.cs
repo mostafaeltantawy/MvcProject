@@ -11,7 +11,7 @@ namespace MvcProject.BLL.Interfaces
         // Signature for property for each and every repository interface
         public IEmployeeRepository EmployeeRepository { get; set; }
         public IDepartmentRepository DepartmentRepository { get; set; }
-        int Complete();
+        Task<int> CompleteAsync();
 
 
     }

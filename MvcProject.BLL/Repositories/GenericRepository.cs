@@ -19,29 +19,29 @@ namespace MvcProject.BLL.Repositories
 			_dbContext = dbContext;
 		}
 
-		public void Add(T item)
+		public async Task AddAsync(T item)
 		{
-			_dbContext.Add(item);
+			 await _dbContext.AddAsync(item);
 		}
 
-		public void Delete(T item)
+		public  void Delete(T item)
 		{
-			_dbContext.Remove(item);
+			  _dbContext.Remove(item);
 		}
 
-		public T Get(int id)
+		public async Task<T> GetAsync(int id)
 		{
-			return _dbContext.Find<T>(id);
+			return  await _dbContext.FindAsync<T>(id);
 		}
 
-		public IEnumerable<T> GetAll()
+		public async Task<IEnumerable<T>> GetAllAsync()
 		{
 			if(typeof(T) == typeof(Employee))
 			{
-                return(IEnumerable<T>) _dbContext.Employees.Include(E => E.Department).ToList();
+                return  (IEnumerable<T>)await _dbContext.Employees.Include(E => E.Department).ToListAsync();
 
             }
-            return _dbContext.Set<T>().ToList();
+            return await _dbContext.Set<T>().ToListAsync();
 		}
 
 		public void Update(T item)

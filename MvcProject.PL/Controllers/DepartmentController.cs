@@ -1,13 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MvcProject.BLL.Interfaces;
 using MvcProject.BLL.Repositories;
 using MvcProject.DAL.Models;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MvcProject.PL.Controllers
 {
-    public class DepartmentController : Controller
+	[Authorize]
+
+	public class DepartmentController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -17,9 +21,9 @@ namespace MvcProject.PL.Controllers
         }
 
         // /Department/Index
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var departments =  _unitOfWork.DepartmentRepository.GetAll();
+            var departments = await  _unitOfWork.DepartmentRepository.GetAllAsync();
             _unitOfWork.Dispose();
 
 
@@ -32,12 +36,12 @@ namespace MvcProject.PL.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(Department department) // Take the field from the submitted for that their name matches classfield names
+        public async Task<IActionResult> Create(Department department) // Take the field from the submitted for that their name matches classfield names
         {
             if (ModelState.IsValid) // server side validation
             {
-                 _unitOfWork.DepartmentRepository.Add(department);
-                var count = _unitOfWork.Complete();
+                 _unitOfWork.DepartmentRepository.AddAsync(department);
+                var count = await _unitOfWork.CompleteAsync();
                 _unitOfWork.Dispose();  
                 if (count > 0)
                     TempData["Message"] = "Department Is Created"; 
@@ -48,12 +52,12 @@ namespace MvcProject.PL.Controllers
         }
 
         // BaseURl/Department/Details/100
-        public IActionResult Details(int? id , string ViewName = "Details") 
+        public async Task<IActionResult> Details(int? id , string ViewName = "Details") 
         {
             if(id == null)
                 return BadRequest(); // Stauts code 400
 
-            var department =  _unitOfWork.DepartmentRepository.Get(id.Value);
+            var department =  await _unitOfWork.DepartmentRepository.GetAsync(id.Value);
             _unitOfWork.Dispose();
             if (department == null)
                 return NotFound();
@@ -63,24 +67,15 @@ namespace MvcProject.PL.Controllers
         }
 
 
-        public IActionResult Edit(int? id) 
+        public async Task<IActionResult> Edit(int? id) 
         {
-            //if (id == null)
-            //{
-            //    return BadRequest();    
-            //}
-            //var department =  _unitOfWork.DepartmentRepository.Get(id.Value);
-            //if(department == null)
-            //{
-            //    return NotFound();
-            //}
-            //return View(department);
-            return Details( id , "Edit");
+      
+            return await Details( id , "Edit");
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Department department ,[FromRoute] int id) 
+        public ActionResult Edit(Department department ,[FromRoute] int id) 
         {
             if (id != department.Id)
                 return BadRequest(); 
@@ -105,14 +100,14 @@ namespace MvcProject.PL.Controllers
         }
 
 
-        public IActionResult Delete(int? id) 
+        public async Task<IActionResult> Delete(int? id) 
         {
-            return Details(id  , "Delete"); 
+            return await Details(id  , "Delete"); 
 
         }
 
         [HttpPost]
-        public IActionResult Delete(Department department , [FromRoute]int id) 
+        public async  Task<IActionResult> Delete(Department department , [FromRoute]int id) 
         {
             if(department.Id != id)
                 return BadRequest();
@@ -120,7 +115,7 @@ namespace MvcProject.PL.Controllers
             try
             {
 				 _unitOfWork.DepartmentRepository.Delete(department);
-                _unitOfWork.Complete();
+                 await _unitOfWork.CompleteAsync();
 
                 _unitOfWork.Dispose();
 
